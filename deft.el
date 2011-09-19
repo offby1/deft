@@ -72,10 +72,10 @@
 ;;     about.txt    browser.txt     directory.txt   operations.txt
 ;;     ack.txt      completion.txt  extensions.txt  text-mode.txt
 ;;     binding.txt  creation.txt    filtering.txt
-;;     
+;;
 ;;     % cat ~/.deft/about.txt
 ;;     About
-;;     
+;;
 ;;     An Emacs mode for slicing and dicing plain text files.
 
 ;; ![Filtering](http://jblevins.org/projects/deft/filter.png)
@@ -448,12 +448,10 @@ title."
   (deft-print-header)
 
   ;; Print the files list
-  (if (not (file-exists-p deft-directory))
-      (widget-insert (deft-no-directory-message))
-    (if deft-current-files
-        (progn
-          (mapc 'deft-file-widget deft-current-files))
-      (widget-insert (deft-no-files-message))))
+  (if deft-current-files
+      (progn
+        (mapc 'deft-file-widget deft-current-files))
+    (widget-insert (deft-no-files-message)))
 
   (use-local-map deft-mode-map)
   (widget-setup)
@@ -496,9 +494,9 @@ title."
     (deft-filter-update)
     (deft-buffer-setup)))
 
-(defun deft-no-directory-message ()
-  "Return a short message to display when the Deft directory does not exist."
-  (concat "Directory " deft-directory " does not exist.\n"))
+(defun deft-create-directory-prompt ()
+  "Return a short message asking if we should create the Deft directory."
+  (concat "Directory " deft-directory " does not exist.  Create it? "))
 
 (defun deft-no-files-message ()
   "Return a short message to display if no files are found."
@@ -767,7 +765,10 @@ Turning on `deft-mode' runs the hook `deft-mode-hook'.
   (interactive)
   (switch-to-buffer deft-buffer)
   (if (not (eq major-mode 'deft-mode))
-      (deft-mode)))
+      (deft-mode))
+  (when (and (not (file-exists-p deft-directory))
+             (y-or-n-p (deft-create-directory-prompt)))
+    (make-directory deft-directory)))
 
 (provide 'deft)
 
